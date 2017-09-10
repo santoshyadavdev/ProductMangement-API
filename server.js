@@ -3,29 +3,9 @@ const bodyparser = require('body-parser');
 
 const app = express();
 
-
-var products = [{
-        id: 1,
-        name: 'Product1',
-        price: 100,
-        imageUrl: 'http://test.com',
-        createdDate: new Date('11-10-1987')
-    },
-    {
-        id: 2,
-        name: 'Product2',
-        price: 2000,
-        imageUrl: 'http://test.com',
-        createdDate: new Date('11-10-1987')
-    },
-    {
-        id: 3,
-        name: 'Product3',
-        price: 3000,
-        imageUrl: 'http://test.com',
-        createdDate: new Date('11-10-1987')
-    }
-];
+const productApi = require('./api/product.api');
+const dbLogger = require('./middleware/dblogger');
+var MongoClient = require('mongodb').MongoClient;
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({
@@ -38,13 +18,11 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.get('/api/product', function (req, res) {
-    res.send(products);
-});
 
-app.post('/api/product', function (req, res) {
-    products.push(req.body);
-    res.send(products);
+
+MongoClient.connect('mongodb://localhost:27017/ProductManagement', function (err, db) {
+    app.use(dbLogger);
+    productApi(app, db);
 });
 
 app.listen(3000, function () {
